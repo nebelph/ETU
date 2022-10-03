@@ -4,13 +4,13 @@ int main()
 {
     setlocale(0, "");
     int taskNumber;
-    cout << "Введите номер задания: ";
+    cout << "Enter the task number: ";
     cin >> taskNumber;
 
     switch (taskNumber)
     {
     case 1:
-        // 1) Вывести, сколько памяти (в байтах) на вашем компьютере отводится под различные типы данных со спецификаторами и без: int, short int, long int, float, double, long double, char и bool.
+        // task 1
 
         cout << "\nint: " << sizeof(int) << "\n";
         cout << "short int: " << sizeof(short int) << "\n";
@@ -23,9 +23,9 @@ int main()
         break;
 
     case 2:
-        // 2) Вывести на экран двоичное представление в памяти (все разряды) целого числа. При выводе необходимо визуально обозначить знаковый разряд и значащие разряды отступами или цветом.
+        // task 2
     {
-        cout << "\nВведите число типа int: ";
+        cout << "\nEnter int: ";
         int input;
         cin >> input;
         int a = sizeof(int) * 8;
@@ -37,17 +37,17 @@ int main()
                 cout << " ";
 
             input <<= 1;
-        } // выводом будет дополнительный код числа input
+        } 
         break;
     }
     case 3:
-        // 3) Вывести на экран двоичное представление в памяти (все разряды) типа float. При выводе необходимо визуально обозначить знаковый разряд мантиссы, знаковый разряд порядка (если есть), мантиссу и порядок.
+        // task 3
     {
         union {
             int tool;
             float input;
         };
-        cout << "\nВведите число типа float: ";
+        cout << "\nEnter float: ";
         cin >> input;
         int a = sizeof(int) * 8;
         int mask = 1 << a - 1;
@@ -61,13 +61,13 @@ int main()
         break;
     }
     case 4:
-        // 4) Вывести на экран двоичное представление в памяти (все разряды) типа double. При выводе необходимо визуально обозначить знаковый разряд мантиссы, знаковый разряд порядка (если есть), мантиссу и порядок. (*)
+        // task 4
     {
         union {
             double input;
             int arr[2];
         };
-        cout << "\nВведите число типа double: ";
+        cout << "\nEnter double: ";
         cin >> input;
         int a = sizeof(int) * 8;
         int mask = 1 << a - 1;
