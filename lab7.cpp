@@ -9,7 +9,7 @@ private:
 		Node* next;
 		Node(char _val) : val(_val), next(nullptr) {}
 	};
-	Node* root;
+	Node* root; // вершина стека
 public:
 	Stack() : root(nullptr) {}
 	
@@ -45,6 +45,31 @@ int pr(char ch) {
 	case '*': case '/': return 3;
 	default: return 0;
 	}
+}
+
+std::string initializing(std::string str) {
+	int len = str.length();
+	for (int i = 0; i < len; i++) {
+		if (pr(str[i]) == 0) {
+			if (!isdigit(str[i]) && str[i] != ')') {
+				char value;
+				const char var = str[i];
+				std::cout << str[i] << " = ";
+				std::cin >> value;
+				bool in = true;
+
+				while (in) {
+					int ind = str.find(var);
+					if (ind >= 0 && ind <= len) {
+						str[ind] = value;
+					}
+					else
+						in = false;
+				}
+			}
+		}
+	}
+	return str;
 }
 
 std::string int2str(int num) {
@@ -235,6 +260,7 @@ int calcValue(std::string str, std::string vars, int* arr) {
 }
 
 int calc(std::string str) {
+	str = initializing(str);
 	int answer = 0;
 	int len = str.length();
 	int brackets_count = 0;
@@ -268,31 +294,6 @@ int calc(std::string str) {
 	delete[] arr_val;
 
 	return answer;
-}
-
-std::string initializing(std::string str) {
-	int len = str.length();
-	for (int i = 0; i < len; i++) {
-		if (pr(str[i]) == 0) {
-			if (!isdigit(str[i]) && str[i] != ')') {
-				char value;
-				const char var = str[i];
-				std::cout << str[i] << " = ";
-				std::cin >> value;
-				bool in = true;
-
-				while (in) {
-					int ind = str.find(var);
-					if (ind >= 0 && ind <= len) {
-						str[ind] = value;
-					}
-					else
-						in = false;
-				}
-			}
-		}
-	}
-	return str;
 }
 
 std::string RPN(std::string input) {
@@ -535,11 +536,7 @@ int calcPN(std::string str) {
 	return st.top();
 }
 
-int main() {
-	srand(time(0));
-	setlocale(LC_ALL, "Russian");
-
-	
+void menu() {
 	std::string infix, prefix, postfix;
 	int infix_c, prefix_c, postfix_c;
 	int task = 1;
@@ -571,7 +568,7 @@ int main() {
 			}
 			else {
 				infix_c = calc(infix);
-				std::cout << "Выражение равно " << infix_c << "." << std::endl << std::endl;
+				std::cout << "Выражение равно " << infix_c << "." << std::endl << std::endl; // Калькулятор для инфиксной формы может быть неточен.
 			}
 			break;
 		case 3:
@@ -615,20 +612,14 @@ int main() {
 			task = 0;
 		}
 	} while (task != 0);
+}
+
+int main() {
+	srand(time(0));
+	setlocale(LC_ALL, "Russian");
+
+	menu();
 	
-	/*
-	std::string a = "5*(6/3+(7*6)-1)+2*8-9";
-	std::cout << "Инфиксная форма:" << std::endl << a << std::endl;
-	int a_counted = calc(a);
-	std::cout << "Выражение равно: " << a_counted << std::endl << std::endl;
-	std::string a_rpn = RPN(a);
-	int a_rpn_counted = calcRPN(a_rpn);
-	std::cout << "Выражение для ОПЗ равно: " << a_rpn_counted << std::endl << std::endl;
-	std::string a_pn = PN(a);
-	int a_pn_counted = calcPN(a_pn);
-	std::cout << "Выражение для ПЗ равно: " << a_pn_counted << std::endl << std::endl;
-	// сделать проверку на корректность для простого калькулятора
-	// написать прямую польскую нотацию
-	*/
+	
 	return 0;
 }
