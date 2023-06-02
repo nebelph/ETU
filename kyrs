@@ -1,0 +1,1449 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <chrono>
+#include <stack>
+
+using namespace std::chrono;
+
+// 1 лаба
+void ofstream(struct Student*);
+void ifstream(struct Student*);
+struct Student {
+	std::string full_name;
+	char sex;
+	int group;
+	int id;
+	int grades[8];
+};
+void PrintTasks();
+std::string FIO(std::string);
+void Change(struct Student*); // 2
+void PrintStudent(struct Student*, int);
+void Print(struct Student*); // 3
+void PrintGroup(struct Student*); // 4
+void PrintBestStudents(struct Student*); // 5
+void MaleFemale(struct Student*); // 6
+void Grades(struct Student*); // 7
+void IdSearch(struct Student*); // 8
+const int SIZE = 30;
+void sizeOf(struct Student* students) {
+	std::cout << sizeof(students) * SIZE;
+}
+void menu1() {
+	struct Student students[SIZE];
+
+	int task = 1;
+	while (task) {
+		PrintTasks();
+		std::cout << "Выберите номер задания (1-9): ";
+		std::cin >> task;
+		switch (task) {
+		case 1:
+			ifstream(students);
+			std::cout << "Данные о студентах считаны из файла." << std::endl;
+			break;
+		case 2:
+			Change(students);
+			std::cout << std::endl;
+			break;
+		case 3:
+			std::cout << "Список студентов:" << std::endl << std::endl;
+			Print(students);
+			std::cout << std::endl;
+			break;
+		case 4:
+			PrintGroup(students);
+			break;
+		case 5:
+			std::cout << "Тройка лучших студентов:" << std::endl << std::endl;
+			PrintBestStudents(students);
+			std::cout << std::endl;
+			break;
+		case 6:
+			MaleFemale(students);
+			std::cout << std::endl;
+			break;
+		case 7:
+			Grades(students);
+			std::cout << std::endl;
+			break;
+		case 8:
+			IdSearch(students);
+			std::cout << std::endl;
+			break;
+		case 9:
+			ofstream(students);
+			std::cout << "Данные о студентах записаны в файл." << std::endl;
+			break;
+		}
+	}
+}
+
+// 2 лаба
+struct Node {
+	int val;
+	Node* next;
+	Node* prev;
+	Node(int _val) : val(_val), next(nullptr), prev(nullptr) {}
+};
+struct list {
+	Node* first;
+	Node* last;
+	list() : first(nullptr), last(nullptr) {}
+
+	bool isEmpty() {
+		return (first == nullptr);
+	}
+
+	void pushBack(int _val) {
+		Node* p = new Node(_val);
+		if (isEmpty()) {
+			first = p;
+			last = p;
+			return;
+		}
+		last->next = p;
+		p->prev = last;
+		last = p;
+	}
+
+	void push(int _val, int ind) {
+		if (isEmpty()) {
+			pushBack(_val);
+			return;
+		}
+		Node* p = new Node(_val);
+		Node* cur = first;
+		for (int i = 0; i < ind - 1; i++) {
+			cur = cur->next;
+		}
+		p->next = cur->next;
+		cur->next->prev = p;
+		p->prev = cur;
+		cur->next = p;
+
+	}
+
+	void printForward() {
+		if (isEmpty()) {
+			std::cout << "Список пуст. Печать невозможна." << std::endl;
+			return;
+		}
+		Node* p = first;
+		while (p) {
+			std::cout << p->val << " ";
+			p = p->next;
+		}
+		std::cout << std::endl;
+	}
+
+	void printBackwards() {
+		if (isEmpty()) {
+			std::cout << "Список пуст. Печать невозможна." << std::endl;
+			return;
+		}
+		Node* p = last;
+		while (p) {
+			std::cout << p->val << " ";
+			p = p->prev;
+		}
+		std::cout << std::endl;
+	}
+
+	void removeFirst() {
+		if (isEmpty()) {
+			std::cout << "Список пуст. Удаление невозможно." << std::endl;
+			return;
+		}
+		Node* p = first;
+		first = p->next;
+		first->prev = nullptr;
+		delete p;
+	}
+
+	void removeLast() {
+		if (isEmpty()) {
+			std::cout << "Список пуст. Удаление невозможно." << std::endl;
+			return;
+		}
+		Node* p = last;
+		last = p->prev;
+		last->next = nullptr;
+		delete p;
+	}
+
+	void removeVal(int _val) {
+		if (isEmpty()) {
+			std::cout << "Список пуст. Удаление невозможно." << std::endl;
+			return;
+		}
+		if (first->val == _val) {
+			removeFirst();
+			return;
+		}
+		if (last->val == _val) {
+			removeLast();
+			return;
+		}
+		Node* slow = first;
+		Node* fast = slow->next;
+		while (fast && fast->val != _val) {
+			slow = fast;
+			fast = fast->next;
+		}
+		if (!fast) {
+			std::cout << "Ваш элемент отсутствует в списке." << std::endl;
+			return;
+		}
+		slow->next = fast->next;
+		fast->next->prev = slow;
+		delete fast;
+		std::cout << "Элемент удалён. Новый список:" << std::endl;
+		printForward();
+	}
+
+	void removeInd(int ind) {
+		if (isEmpty()) {
+			std::cout << "Список пуст. Удаление невозможно." << std::endl;
+			return;
+		}
+		if (ind == 0) {
+			removeFirst();
+			return;
+		}
+		Node* cur = first;
+		for (int i = 0; i < ind; i++) {
+			cur = cur->next;
+		}
+		if (!cur) {
+			std::cout << "Ваш индекс выходит за пределы списка. Удаление невозможно." << std::endl;
+			return;
+		}
+		if (cur->next == nullptr) {
+			cur->prev->next = nullptr;
+			delete cur;
+			std::cout << "Элемент удалён. Новый список:" << std::endl;
+			printForward();
+			return;
+		}
+		cur->prev->next = cur->next;
+		cur->next->prev = cur->prev;
+		delete cur;
+		std::cout << "Элемент удалён. Новый список:" << std::endl;
+		printForward();
+	}
+
+	void swap(int ind1, int ind2) {
+		if (isEmpty()) {
+			std::cout << "Список пуст." << std::endl;
+			return;
+		}
+		if (first == last) {
+			return;
+		}
+		Node* t1 = first;
+		for (int i = 0; i < ind1; i++) {
+			if (t1->next == nullptr) {
+				std::cout << "Индекс " << ind1 << " выходит за пределы списка." << std::endl;
+				return;
+			}
+			t1 = t1->next;
+		}
+		Node* t2 = first;
+		for (int i = 0; i < ind2; i++) {
+			if (t2->next == nullptr) {
+				std::cout << "Индекс " << ind2 << " выходит за пределы списка." << std::endl;
+				return;
+			}
+			t2 = t2->next;
+		}
+		Node* val1 = new Node(t1->val);
+		Node* val2 = new Node(t2->val);
+		t1->val = val2->val;
+		t2->val = val1->val;
+		delete val1;
+		delete val2;
+		std::cout << "Элементы поменяли местами. Новый список:" << std::endl;
+		printForward();
+	}
+
+	void getInd(int _val) {
+		if (isEmpty()) {
+			std::cout << "Список пуст." << std::endl;
+			return;
+		}
+		int ind = 0;
+		Node* p = first;
+		do {
+			if (p->val == _val) {
+				std::cout << "Индекс вашего элемента - " << ind << "." << std::endl;
+				return;
+			}
+			p = p->next;
+			ind += 1;
+		} while (p->next != nullptr);
+		std::cout << "Вашего элемента нет в списке." << std::endl;
+	}
+
+	void getVal(int ind) {
+		if (isEmpty()) {
+			std::cout << "Список пуст." << std::endl;
+			return;
+		}
+		Node* p = first;
+		int test = 0;
+		for (int i = 0; i < ind; i++) {
+			if (p->next != nullptr) {
+				p = p->next;
+				test += 1;
+			}
+		}
+		if (test != ind) {
+			std::cout << "Ваш индекс выходит за пределы списка." << std::endl;
+			return;
+		}
+		std::cout << "Значение по вашему индексу - " << p->val << "." << std::endl;
+	}
+};
+list task1a();
+list task1b();
+list task1();
+list task3(list l);
+int* createDynArr();
+void menu2() {
+	list l;
+	int tnum;
+	int* mas = createDynArr();
+	delete[] mas;
+	do {
+		std::cout << "Выберите номер задания (1/2/3/4, 0 - закончить): ";
+		std::cin >> tnum;
+		switch (tnum) {
+		case 1:
+			l = task1();
+			break;
+		case 2:
+			l = task1();
+			break;
+		case 3:
+			task3(l);
+			break;
+		case 4:
+			task3(l);
+			break;
+		}
+	} while (tnum);
+}
+
+// 3 лаба
+class Stack {
+private:
+	struct Node {
+		char val;
+		Node* next;
+		Node(char _val) : val(_val), next(nullptr) {}
+	};
+	Node* root; // вершина стека
+public:
+	Stack() : root(nullptr) {}
+
+	bool empty() {
+		return root == nullptr;
+	}
+
+	void push(int _val) {
+		Node* newnode = new Node(_val);
+		newnode->next = root;
+		root = newnode;
+	}
+
+	void pop() {
+		if (empty())
+			return;
+		else {
+			Node* delnode = root;
+			root = root->next;
+			delete delnode;
+		}
+	}
+
+	char top() {
+		return root->val;
+	}
+};
+int pr(char ch) {
+	switch (ch) {
+	case '(': return 1;
+	case '+': case '-': return 2;
+	case '*': case '/': return 3;
+	default: return 0;
+	}
+}
+std::string initializing(std::string str) {
+	int len = str.length();
+	for (int i = 0; i < len; i++) {
+		if (pr(str[i]) == 0) {
+			if (!isdigit(str[i]) && str[i] != ')') {
+				char value;
+				const char var = str[i];
+				std::cout << str[i] << " = ";
+				std::cin >> value;
+				bool in = true;
+
+				while (in) {
+					int ind = str.find(var);
+					if (ind >= 0 && ind <= len) {
+						str[ind] = value;
+					}
+					else
+						in = false;
+				}
+			}
+		}
+	}
+	return str;
+}
+std::string int2str(int num) {
+	std::string rev_str = "";
+	do {
+		rev_str += char(num % 10 + 48);
+		num /= 10;
+	} while (num != 0);
+
+	int len = rev_str.length();
+	std::string str = "";
+	for (int i = 0; i < len; i++) {
+		str += rev_str[len - 1 - i];
+	}
+
+	return str;
+}
+int st(int a, int p) {
+	int answer = 1;
+	for (int i = 0; i < p; i++) {
+		answer *= a;
+	}
+	return answer;
+}
+int str2int(std::string str) {
+	int num = 0;
+	int len = str.length();
+	for (int i = 0; i < len; i++) {
+		num += st(10, len - i - 1) * (int(str[i]) - 48);
+	}
+	return num;
+}
+int calcValue(std::string str, std::string vars, int* arr) {
+	int answer = 0;
+	int len = str.length();
+	int var_count = 0;
+	for (int i = 0; i < len; i++) {
+		if (pr(str[i]) == 0 && !isdigit(str[i])) {
+			var_count++;
+		}
+	}
+
+	if (var_count != 0) {
+		int p = 0;
+		int i = 0;
+		do {
+			if (pr(str[i]) == 0 && !isdigit(str[i])) {
+				str.replace(i, 1, int2str(arr[vars.find(str[i])])); // заменяем переменные на числа
+				p++;
+			}
+			i++;
+		} while (p != var_count);
+	}
+	// далее следует написать калькулятор для выражений без скобок
+	len = str.length();
+	int plus_count = 0, minus_count = 0, umnozh_count = 0, razdel_count = 0;
+	for (int i = 0; i < len; i++) {
+		if (pr(str[i]) != 0) {
+			if (str[i] == '+')
+				plus_count++;
+			else if (str[i] == '-')
+				minus_count++;
+			else if (str[i] == '*')
+				umnozh_count++;
+			else if (str[i] == '/')
+				razdel_count++;
+		}
+	}
+	int pr2_count = plus_count + minus_count;
+	int pr3_count = umnozh_count + razdel_count;
+	while (pr3_count) {
+		len = str.length();
+		int left, right;
+		for (int i = 0; i < len; i++) {
+			if (pr(str[i]) == 3) {
+				left = i;
+				right = i;
+				while (true) {
+					if (left - 1 >= 0) {
+						if (isdigit(str[left - 1])) {
+							left--;
+						}
+						else
+							break;
+					}
+					else
+						break;
+				}
+				while (true) {
+					if (right + 1 < len) {
+						if (isdigit(str[right + 1])) {
+							right++;
+						}
+						else
+							break;
+					}
+					else
+						break;
+				}
+				// на данном шаге мы имеем левый и правый индекс бинарного выражения
+				int local_answer_int = 0;
+				std::string l_str = "";
+				for (int j = left; j < i; j++) {
+					l_str += str[j];
+				}
+				int l_int = str2int(l_str);
+				std::string r_str = "";
+				for (int j = i + 1; j < right + 1; j++) {
+					r_str += str[j];
+				}
+				int r_int = str2int(r_str);
+				switch (str[i]) {
+				case '*':
+					local_answer_int = l_int * r_int;
+					break;
+				case '/':
+					local_answer_int = l_int / r_int;
+					break;
+				}
+				std::string local_answer_str = int2str(local_answer_int);
+				str.replace(left, right - left + 1, local_answer_str);
+				pr3_count--;
+				break;
+			}
+		}
+	}
+	while (pr2_count) {
+		len = str.length();
+		int left, right;
+		for (int i = 0; i < len; i++) {
+			if (pr(str[i]) == 2) {
+				left = i;
+				right = i;
+				while (true) {
+					if (left - 1 >= 0) {
+						if (isdigit(str[left - 1])) {
+							left--;
+						}
+						else
+							break;
+					}
+					else
+						break;
+				}
+				while (true) {
+					if (right + 1 < len) {
+						if (isdigit(str[right + 1])) {
+							right++;
+						}
+						else
+							break;
+					}
+					else
+						break;
+				}
+				// на данном шаге мы имеем левый и правый индекс бинарного выражения
+				int local_answer_int = 0;
+				std::string l_str = "";
+				for (int j = left; j < i; j++) {
+					l_str += str[j];
+				}
+				int l_int = str2int(l_str);
+				std::string r_str = "";
+				for (int j = i + 1; j < right + 1; j++) {
+					r_str += str[j];
+				}
+				int r_int = str2int(r_str);
+				switch (str[i]) {
+				case '+':
+					local_answer_int = l_int + r_int;
+					break;
+				case '-':
+					local_answer_int = l_int - r_int;
+					break;
+				}
+				std::string local_answer_str = int2str(local_answer_int);
+				str.replace(left, right - left + 1, local_answer_str);
+				pr2_count--;
+				break;
+			}
+		}
+	}
+	answer = str2int(str);
+	return answer;
+}
+int calc(std::string str) {
+	str = initializing(str);
+	int answer = 0;
+	int len = str.length();
+	int brackets_count = 0;
+	std::string vars = ""; // строка с соответствующими переменными
+
+	for (int i = 0; i < len; i++) { // считаем количество выражений в скобках
+		if (str[i] == '(')
+			brackets_count++;
+	}
+	int* arr_val = new int[brackets_count]; // массив со значениями внутри скобок
+
+	for (int i = 0; i < brackets_count; i++) { // раскрываем скобки
+		int right = str.find(')'); // находим индекс закрывающей скобки
+		int left;
+		for (left = right; str[left] != '('; left--); // находим индекс открывающей скобки
+		std::string inside = "";
+		for (int j = left + 1; j < right; j++) { // в строку inside добавляем внутреннее содержимое скобок
+			inside += str[j];
+		}
+		arr_val[i] = calcValue(inside, vars, arr_val);
+		std::string str_var = "0";
+		str_var[0] = char(65 + i);
+		str.replace(left, right - left + 1, str_var); // заменяем скобки переменными
+		vars += char(65 + i);
+
+	}
+
+	//example: 7+X-Y, где Y = 5+Z, где Z = 7-W
+	answer = calcValue(str, vars, arr_val);
+
+	delete[] arr_val;
+
+	return answer;
+}
+std::string RPN(std::string input) {
+	Stack st;
+	std::cout << "Строим ОПЗ:";
+	std::string output;
+	std::cout << std::endl;
+	int len = input.length();
+
+	for (int i = 1; i < len; i++) { // проверка на корректность ввода
+		if (input[i] != ')' && input[i - 1] != ')' && pr(input[i - 1]) == 0) {
+			if (pr(input[i]) == pr(input[i - 1])) {
+				std::cout << "Invalid input";
+				return "";
+			}
+		}
+	}
+
+	int operand_count = 0, operation_count = 0;
+
+	for (int i = 0; i < len; i++) {
+		if (pr(input[i]) == 0 && input[i] != ')') { // встречается операнд
+			if (input[i] == ' ') { // проверка на корректность ввода
+				std::cout << "Invalid input";
+				return "";
+			}
+			std::cout << "'" << input[i] << "' - переменная. Помещаем её в строку." << std::endl;
+			operand_count++;
+			output += input[i];
+			std::cout << "Строка: " << output << std::endl;
+		}
+
+		else if (pr(input[i]) == 1) { // встречается '('
+			std::cout << "'(' - открывающая скобка. Помещаем в стек." << std::endl;
+			st.push(input[i]);
+		}
+
+		else if (input[i] == ')') { // встречается ')'
+			std::cout << "')' - закрывающая скобка. Извлекаем из стека в строку все символы до открывающейся скобки. Уничтожаем обе скобки." << std::endl;
+			do {
+				output += st.top();
+				std::cout << "Строка: " << output << std::endl;
+				st.pop();
+			} while (st.top() != '(');
+			st.pop();
+		}
+
+		else { // встречаются '+', '-', '*', '/'
+			operation_count++;
+			if (st.empty()) { // если стек пуст
+				std::cout << "'" << input[i] << "' - операция (приоритет " << pr(input[i]) << "). Стек пуст. Помещаем в стек." << std::endl;
+				st.push(input[i]);
+			}
+
+			else if (pr(st.top()) < pr(input[i])) { // если приоритет данной операции больше приоритета вершины стека
+				std::cout << "'" << input[i] << "' - операция (приоритет " << pr(input[i]) << "). Проверяем стек: на вершине символ '" << st.top() << "' (приоритет " << pr(st.top()) << "). Помещаем символ '" << input[i] << "' в стек." << std::endl;
+				st.push(input[i]);
+			}
+
+			else { // если приоритет данной операции НЕ больше приоритета вершины стека
+				std::cout << "'" << input[i] << "' - операция (приоритет " << pr(input[i]) << "). Проверяем стек: на вершине символ '" << st.top() << "' (приоритет " << pr(st.top()) << ").\nИзвлекаем символы из стека в строку, пока приоритет данной операции не больше приоритета операции на вершине стека." << std::endl;
+				while (pr(st.top()) >= pr(input[i])) {
+					output += st.top();
+					std::cout << "Строка: " << output << std::endl;
+					st.pop();
+					if (st.empty())
+						break;
+				}
+				if (st.empty())
+					std::cout << "Стек пуст. Помещаем символ '" << input[i] << "' в стек." << std::endl;
+				else
+					std::cout << "Проверяем стек: на вершине символ '" << st.top() << "' (приоритет " << pr(st.top()) << "). Помещаем символ '" << input[i] << "' в стек." << std::endl;
+				st.push(input[i]);
+			}
+		}
+	}
+
+	std::cout << "Выражение прочитано." << std::endl;
+	if (!st.empty()) { // если в стеке остались знаки операций
+		std::cout << "Проверяем стек. В стеке есть операции. Заносим операции в строку." << std::endl;
+		while (pr(st.top())) {
+			output += st.top();
+			std::cout << "Строка: " << output << std::endl;
+			st.pop();
+			if (st.empty())
+				break;
+		}
+	}
+	std::cout << std::endl << "ОПЗ построена:" << std::endl;
+
+	if (operand_count - 1 == operation_count && operation_count != 0) { // проверка на корректность ввода
+		std::cout << output << std::endl;
+		std::string new_output = initializing(output);
+		if (new_output != output) {
+			std::cout << new_output << std::endl << std::endl;
+			return new_output;
+		}
+		return output;
+	}
+	else {
+		std::cout << "Invalid input" << std::endl;
+		return "";
+	}
+}
+int calcRPN(std::string str) {
+	std::stack<int> st;
+	str = initializing(str);
+	int len = str.length();
+
+	for (int i = 0; i < len; i++) {
+		if (pr(str[i]) == 0) {
+			int num = int(str[i]) - 48;
+			st.push(num);
+		}
+		else if (pr(str[i]) > 1) {
+			switch (pr(str[i])) {
+			case 2:
+				if (str[i] == '+') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(left + right);
+					break;
+				}
+				else if (str[i] == '-') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(left - right);
+					break;
+				}
+			case 3:
+				if (str[i] == '*') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(left * right);
+					break;
+				}
+				else if (str[i] == '/') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(left / right);
+					break;
+				}
+			}
+		}
+	}
+	return st.top();
+}
+std::string PN(std::string input) {
+	std::cout << "Строим ПЗ:" << std::endl;
+	input = initializing(input);
+	std::cout << "Переворачиваем:" << std::endl;
+	reverse(input.begin(), input.end());
+	std::cout << input << std::endl;
+	int len = input.length();
+	std::cout << "Разворачиваем скобки:" << std::endl;
+	for (int i = 0; i < len; i++) {
+		if (input[i] == ')') {
+			input[i] = '[';
+		}
+		else if (input[i] == '(') {
+			input[i] = ']';
+		}
+	}
+	for (int i = 0; i < len; i++) {
+		if (input[i] == ']') {
+			input[i] = ')';
+		}
+		else if (input[i] == '[') {
+			input[i] = '(';
+		}
+	}
+	std::cout << input << std::endl;
+	input = RPN(input);
+	std::cout << "Переворачиваем." << std::endl;
+	reverse(input.begin(), input.end());
+	std::cout << std::endl << "ПЗ построена:" << std::endl << input << std::endl;
+	return input;
+}
+int calcPN(std::string str) {
+	reverse(str.begin(), str.end());
+	std::stack<int> st;
+	str = initializing(str);
+	int len = str.length();
+
+	for (int i = 0; i < len; i++) {
+		if (pr(str[i]) == 0) {
+			int num = int(str[i]) - 48;
+			st.push(num);
+		}
+		else if (pr(str[i]) > 1) {
+			switch (pr(str[i])) {
+			case 2:
+				if (str[i] == '+') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(left + right);
+					break;
+				}
+				else if (str[i] == '-') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(right - left);
+					break;
+				}
+			case 3:
+				if (str[i] == '*') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(left * right);
+					break;
+				}
+				else if (str[i] == '/') {
+					int right = st.top();
+					st.pop();
+					int left = st.top();
+					st.pop();
+					st.push(right / left);
+					break;
+				}
+			}
+		}
+	}
+	return st.top();
+}
+void menu3() {
+	std::string infix, prefix, postfix;
+	int infix_c, prefix_c, postfix_c;
+	int task = 1;
+	do {
+		std::cout << "\t1) Ввести инфиксную форму;\n\t2) Посчитать инфиксную форму;\n\t3) Преобразовать в ОПЗ;\n\t4) Посчитать ОПЗ;\n\t5) Преобразовать в ПЗ;\n\t6) Посчитать ПЗ;\n\nВыберите задание: ";
+		std::cin >> task;
+		switch (task) {
+		case 1:
+			if (infix.size() == 0) {
+				std::cout << "Введите инфиксное выражение:" << std::endl;
+				std::cin.get();
+				getline(std::cin, infix);
+				std::cout << std::endl;
+			}
+			else {
+				std::string new_infix;
+				std::cout << "Введите инфиксное выражение или оставьте предыдущее выражение нажатием Enter:" << std::endl;
+				std::cin.get();
+				getline(std::cin, new_infix);
+				std::cout << std::endl;
+				if (new_infix.size() != 0) {
+					infix = new_infix;
+				}
+			}
+			break;
+		case 2:
+			if (infix.size() == 0) {
+				std::cout << "Для начала выполните пункт 1." << std::endl << std::endl;
+			}
+			else {
+				infix_c = calc(infix);
+				std::cout << "Выражение равно " << infix_c << "." << std::endl << std::endl; // Калькулятор для инфиксной формы может быть неточен.
+			}
+			break;
+		case 3:
+			if (infix.size() == 0) {
+				std::cout << "Для начала выполните пункт 1." << std::endl << std::endl;
+			}
+			else {
+				postfix = RPN(infix);
+				std::cout << std::endl;
+			}
+			break;
+		case 4:
+			if (postfix.size() == 0) {
+				std::cout << "Для начала выполните пункт 3." << std::endl << std::endl;
+			}
+			else {
+				postfix_c = calcRPN(postfix);
+				std::cout << "Выражение равно " << postfix_c << "." << std::endl << std::endl;
+			}
+			break;
+		case 5:
+			if (infix.size() == 0) {
+				std::cout << "Для начала выполните пункт 1." << std::endl << std::endl;
+			}
+			else {
+				prefix = PN(infix);
+				std::cout << std::endl;
+			}
+			break;
+		case 6:
+			if (prefix.size() == 0) {
+				std::cout << "Для начала выполните пункт 5." << std::endl << std::endl;
+			}
+			else {
+				prefix_c = calcPN(prefix);
+				std::cout << "Выражение равно " << prefix_c << "." << std::endl << std::endl;
+			}
+			break;
+		default:
+			std::cout << "Работа программы прекращена." << std::endl;
+			task = 0;
+		}
+	} while (task != 0);
+}
+
+int main() {
+	setlocale(LC_ALL, "Russian");
+	srand(time(0));
+	
+	int lab_num;
+
+	do {
+		std::cout << std::endl;
+		std::cout << "Выберите номер работы: ";
+		std::cin >> lab_num;
+		switch (lab_num) {
+		case 1:
+			std::cout << std::endl << "Лаб. работа 1" << std::endl;
+			menu1();
+			break;
+		case 2:
+			std::cout << std::endl << "Лаб. работа 2" << std::endl;
+			menu2();
+			break;
+		case 3:
+			std::cout << std::endl << "Лаб. работа 3" << std::endl;
+			menu3();
+			break;
+		case 0:
+			break;
+		default:
+			std::cout << "Введён неверный номер." << std::endl;
+		}
+
+	} while (lab_num);
+	return 0;
+}
+
+// 1 лаба
+void PrintTasks() {
+	std::cout << std::endl << "1. Прочесть данные о студентах из файла." << std::endl;
+	std::cout << "2. Внести изменения в данные о студентах." << std::endl;
+	std::cout << "3. Вывести информацию обо всех студентах." << std::endl;
+	std::cout << "4. Вывести информацию о студентах группы N." << std::endl;
+	std::cout << "5. Вывести топ самых успешных студентов." << std::endl;
+	std::cout << "6. Вывести количество студентов мужского и женского пола." << std::endl;
+	std::cout << "7. Вывести информацию о студентах с разными оценками." << std::endl;
+	std::cout << "8. Вывести информацию о студентах, имеющих номер в списке k." << std::endl;
+	std::cout << "9. Записать данные о студентах в файл." << std::endl << std::endl;
+}
+std::string FIO(std::string string) {
+	//std::getline(std::cin, string);
+	std::string str1, str2, str3;
+	std::cin >> str1;
+	std::cin >> str2;
+	std::cin >> str3;
+	string = str1 + " " + str2 + " " + str3;
+	return string;
+}
+void Change(struct Student* students) {
+	int number;
+	std::string parameter;
+	bool yes, yes1;
+	do {
+		std::cout << "Введите номер студента (0-29): ";
+		std::cin >> number;
+		do {
+			std::cout << "Что нужно изменить? (name/sex/group/id/grades) ";
+			std::cin >> parameter;
+			if (parameter == "name") {
+				std::string name_new;
+				std::cout << "Введите новое ФИО: ";
+				(students + number)->full_name = FIO(name_new);
+			}
+			else if (parameter == "sex") {
+				char sex_new;
+				std::cout << "Введите новый пол: ";
+				std::cin >> sex_new;
+				(students + number)->sex = sex_new;
+			}
+			else if (parameter == "group") {
+				int group_new;
+				std::cout << "Введите новый номер группы: ";
+				std::cin >> group_new;
+				(students + number)->group = group_new;
+			}
+			else if (parameter == "id") {
+				int id_new;
+				std::cout << "Введите новый номер в списке: ";
+				std::cin >> id_new;
+				(students + number)->id = id_new;
+			}
+			else if (parameter == "grades") {
+				int grades_new[8];
+				std::cout << "Введите новые оценки (через пробел): ";
+				for (int i = 0; i < 8; i++) {
+					std::cin >> grades_new[i];
+					(students + number)->grades[i] = grades_new[i];
+				}
+			}
+			std::string yes_or_no;
+			std::cout << "Хотите изменить что-то еще? (yes/no) ";
+			std::cin >> yes_or_no;
+			if (yes_or_no == "yes")
+				yes1 = true;
+			else
+				yes1 = false;
+		} while (yes1);
+		std::string yes_or_no;
+		std::cout << "Хотите внести изменения другому студенту? (yes/no) ";
+		std::cin >> yes_or_no;
+		if (yes_or_no == "yes")
+			yes = true;
+		else
+			yes = false;
+	} while (yes);
+}
+void PrintStudent(struct Student* students, int i) {
+	std::cout << i + 1 << ") " << "ФИО: " << (students + i)->full_name << "\n";
+	std::cout << "Пол: " << (students + i)->sex << "\t";
+	std::cout << "Номер группы: " << (students + i)->group << "\t";
+	std::cout << "Номер в группе: " << (students + i)->id << "\t";
+	std::cout << "Оценки: ";
+	for (int j = 0; j < 8; j++) {
+		std::cout << (students + i)->grades[j] << " ";
+	}
+	std::cout << std::endl << std::endl;
+}
+void Print(struct Student* students) {
+	for (int i = 0; i < SIZE; i++) {
+		PrintStudent(students, i);
+	}
+}
+void PrintGroup(struct Student* students) {
+	int group_num;
+	std::cout << "Введите номер группы: ";
+	std::cin >> group_num;
+	std::cout << "Список студентов группы " << group_num << ":" << std::endl;
+	for (int i = 0; i < SIZE; i++) {
+		if ((students + i)->group == group_num) {
+			PrintStudent(students, i);
+		};
+	}
+}
+void PrintBestStudents(struct Student* students) {
+	double arr_grades[SIZE];
+	int sum_grade;
+	double curr_grade;
+	for (int i = 0; i < SIZE; i++) {
+		sum_grade = 0;
+		for (int j = 0; j < 8; j++) {
+			sum_grade += (students + i)->grades[j];
+		}
+		curr_grade = sum_grade / 8;
+		arr_grades[i] = curr_grade;
+	}
+
+	int arr_numb[SIZE];
+
+	for (int i = 0; i < SIZE; i++) {
+		arr_numb[i] = i;
+	}
+
+	for (int i = 0; i < SIZE; i++) {
+		for (int j = 0; j < SIZE - 1; j++) {
+			if (arr_grades[i] > arr_grades[j + 1]) {
+				std::swap(arr_grades[i], arr_grades[j + 1]);
+				std::swap(arr_numb[i], arr_numb[j + 1]);
+			}
+		}
+	}
+
+	for (int i = 1; i < 4; i++) {
+		PrintStudent(students, arr_numb[i]);
+	}
+}
+void MaleFemale(struct Student* students) {
+	int m_amount = 0, fem_amount = 0;
+	for (int i = 0; i < SIZE; i++) {
+		if ((students + i)->sex == 'M')
+			m_amount += 1;
+		else
+			fem_amount += 1;
+	}
+	std::cout << "Количество парней: " << m_amount << std::endl;
+	std::cout << "Количество девушек: " << fem_amount << std::endl;
+}
+void Grades(struct Student* students) {
+	std::string arr_value[SIZE];
+	for (int i = 0; i < SIZE; i++) {
+		bool low = false;
+		int sum = 0;
+		for (int j = 0; j < 8; j++) {
+			if ((students + i)->grades[j] <= 3) {
+				low = true;
+				break;
+			}
+			else {
+				sum += (students + i)->grades[j];
+			}
+		}
+		if (low) {
+			arr_value[i] = "low";
+			continue;
+		}
+		if (sum == 5 * 8)
+			arr_value[i] = "high";
+		else
+			arr_value[i] = "middle";
+	}
+	std::cout << "Студенты, учащиеся на 5:" << std::endl;
+	for (int i = 0; i < SIZE; i++) {
+		if (arr_value[i] == "high")
+			PrintStudent(students, i);
+	}
+	std::cout << "Студенты, учащиеся на 4 и 5:" << std::endl;
+	for (int i = 0; i < SIZE; i++) {
+		if (arr_value[i] == "middle")
+			PrintStudent(students, i);
+	}
+	std::cout << "Студенты, не получающие стипендию:" << std::endl;
+	for (int i = 0; i < SIZE; i++) {
+		if (arr_value[i] == "low")
+			PrintStudent(students, i);
+	}
+}
+void IdSearch(struct Student* students) {
+	int id;
+	std::cout << "Введите номер из списка: ";
+	std::cin >> id;
+	std::cout << "Список студентов, имеющих " << id << " номер в списке группы:" << std::endl;
+	for (int i = 0; i < SIZE; i++) {
+		if ((students + i)->id == id)
+			PrintStudent(students, i);
+	}
+}
+void ofstream(struct Student* student) {
+	std::ofstream fout;
+
+	fout.open("database_new.txt", std::ofstream::app);
+
+	if (!fout.is_open()) {
+		std::cout << "Ошибка открытия файла!\n\n";
+	}
+	else {
+
+		std::string full_name;
+		char sex;
+		int group;
+		int id;
+		int grades[8];
+
+		for (int y = 0; y < SIZE; y++) {
+			for (int i = 1; i <= 5; i++) {
+				if (i % 5 == 1) {
+					full_name = (student + y)->full_name;
+					fout << full_name << std::endl;
+				}
+				else if (i % 5 == 2) {
+					sex = (student + y)->sex;
+					fout << sex << std::endl;
+				}
+				else if (i % 5 == 3) {
+					group = (student + y)->group;
+					fout << group << std::endl;
+				}
+				else if (i % 5 == 4) {
+					id = (student + y)->id;
+					fout << id << std::endl;
+				}
+				else if (i % 5 == 0) {
+					for (int j = 0; j < 8; j++) {
+						grades[j] = (student + y)->grades[j];
+					}
+					for (int j = 0; j < 8; j++) {
+						fout << grades[j] << " ";
+					}
+					if (y != 29) {
+						fout << std::endl;
+					}
+				}
+			}
+		}
+	}
+	fout.close();
+}
+void ifstream(struct Student* student) {
+	std::ifstream fin;
+
+	fin.open("database.txt");
+
+	if (!fin.is_open()) {
+		std::cout << "Error!\n\n";
+	}
+	else {
+		std::string full_name;
+		char sex;
+		int group;
+		int id;
+		int grades[8];
+
+		int d = 0;
+
+		for (int y = 0; y < SIZE; y++) {
+			fin.seekg(d);
+			for (int i = 1; i <= 5; i++) {
+				if (i % 5 == 1) {
+					std::getline(fin, full_name);
+					(student + y)->full_name = full_name;
+				}
+				else if (i % 5 == 2) {
+					fin >> sex;
+					(student + y)->sex = sex;
+				}
+				else if (i % 5 == 3) {
+					fin >> group;
+					(student + y)->group = group;
+				}
+				else if (i % 5 == 4) {
+					fin >> id;
+					(student + y)->id = id;
+				}
+				else if (i % 5 == 0) {
+					for (int j = 0; j < 8; j++) {
+						fin >> grades[j];
+					}
+					for (int j = 0; j < 8; j++) {
+						(student + y)->grades[j] = grades[j];
+					}
+				}
+			}
+			d = fin.tellg();
+			d += 2;
+		}
+	}
+	fin.close();
+}
+
+// 2 лаба
+list task1() {
+	list l;
+	int n;
+	std::cout << "Выберите тип заполнения списка (1 - авто; 2 - вручную): ";
+	std::cin >> n;
+	switch (n) {
+	case 1:
+		l = task1a();
+		break;
+	case 2:
+		l = task1b();
+		break;
+	}
+	return l;
+}
+list task1a() {
+	list la;
+	std::cout << "Введите количество элементов в списке: ";
+	int size;
+	std::cin >> size;
+	auto start = system_clock::now(); //
+	for (int i = 0; i < size; i++) {
+		la.pushBack(rand() % 99);
+	}
+	auto end = system_clock::now(); //
+	auto result = duration_cast<nanoseconds>(end - start); //
+	std::cout << "Время затраченное на создание двусвязного списка - " << result.count() << " наносекунд." << std::endl; //
+	std::cout << "Готовый список:" << std::endl;
+	la.printForward();
+	return la;
+}
+list task1b() {
+	list lb;
+	std::cout << "Вводите элементы списка:" << std::endl;
+	int val;
+	int amount = 0; //
+	while (std::cin >> val) {
+		auto start = system_clock::now(); //
+		lb.pushBack(val);
+		auto end = system_clock::now(); //
+		auto result = duration_cast<nanoseconds>(end - start); //
+		amount += result.count(); //
+	}
+	std::cout << "Время затраченное на создание двусвязного списка - " << amount << " наносекунд." << std::endl; //
+	std::cout << "Готовый список:" << std::endl;
+	lb.printForward();
+	return lb;
+}
+list task3(list l) {
+	int action;
+	do {
+		std::cout << "Выберите действие (1 - вставка; 2 - удаление; 3 - обмен; 4 - получение; 0 - закончить): ";
+		std::cin >> action;
+		if (action == 1) {
+			int number;
+			std::cout << "Введите число: ";
+			std::cin >> number;
+			auto start1 = system_clock::now(); //
+			l.pushBack(number);
+			auto end1 = system_clock::now(); //
+			auto result1 = duration_cast<nanoseconds>(end1 - start1); //
+			std::cout << "Время затраченное на вставку - " << result1.count() << " наносекунд." << std::endl; //
+			std::cout << "Число " << number << " добавлено в конец списка. Новый список:" << std::endl;
+			l.printForward();
+		}
+		else if (action == 2) {
+			std::cout << "Выберите действие (1 - удаление по индексу; 2 - удаление по значению): ";
+			int action2;
+			std::cin >> action2;
+			if (action2 == 1) {
+				int ind;
+				std::cout << "Введите индекс (нумерация начинается с 0): ";
+				std::cin >> ind;
+				auto start21 = system_clock::now(); //
+				l.removeInd(ind);
+				auto end21 = system_clock::now(); //
+				auto result21 = duration_cast<nanoseconds>(end21 - start21); //
+				std::cout << "Время затраченное на удаление - " << result21.count() << " наносекунд." << std::endl; //
+			}
+			else if (action2 == 2) {
+				int val;
+				std::cout << "Введите значение: ";
+				std::cin >> val;
+				auto start22 = system_clock::now(); //
+				l.removeVal(val);
+				auto end22 = system_clock::now(); //
+				auto result22 = duration_cast<nanoseconds>(end22 - start22); //
+				std::cout << "Время затраченное на удаление - " << result22.count() << " наносекунд." << std::endl; //
+			}
+		}
+		else if (action == 3) {
+			std::cout << "Введите индексы (нумерация начинается с 0): ";
+			int ind1, ind2;
+			std::cin >> ind1;
+			std::cin >> ind2;
+			auto start3 = system_clock::now(); //
+			l.swap(ind1, ind2);
+			auto end3 = system_clock::now(); //
+			auto result3 = duration_cast<nanoseconds>(end3 - start3); //
+			std::cout << "Время затраченное на обмен - " << result3.count() << " наносекунд." << std::endl; //
+			std::cout << "Новый список:" << std::endl;
+			l.printForward();
+		}
+		else if (action == 4) {
+			std::cout << "Выберите действие (1 - получение по индексу; 2 - получение по значению): ";
+			int action4;
+			std::cin >> action4;
+			if (action4 == 1) {
+				int ind;
+				std::cout << "Введите индекс (нумерация начинается с 0): ";
+				std::cin >> ind;
+				auto start41 = system_clock::now(); //
+				l.getVal(ind);
+				auto end41 = system_clock::now(); //
+				auto result41 = duration_cast<nanoseconds>(end41 - start41); //
+				std::cout << "Время затраченное на получение - " << result41.count() << " наносекунд." << std::endl; //
+			}
+			else if (action4 == 2) {
+				int val;
+				std::cout << "Введите значение: ";
+				std::cin >> val;
+				auto start42 = system_clock::now(); //
+				l.getInd(val);
+				auto end42 = system_clock::now(); //
+				auto result42 = duration_cast<nanoseconds>(end42 - start42); //
+				std::cout << "Время затраченное на получение - " << result42.count() << " наносекунд." << std::endl; //
+			}
+		}
+	} while (action == 1 || action == 2 || action == 3 || action == 4);
+	return l;
+}
+int* createDynArr() {
+	int size = 0;
+	int* arr = new int[size];
+	std::cout << "Выберите тип заполнения массива (1 - авто; 2 - вручную): ";
+	int act;
+	std::cin >> act;
+	if (act == 1) {
+		std::cout << "Введите количество элементов в массиве: ";
+		std::cin >> size;
+		auto start = system_clock::now(); //
+		int* rez = new int[size];
+		arr = rez;
+		for (int i = 0; i < size; i++) {
+			*(arr + i) = rand() % 99;
+		}
+		auto end = system_clock::now(); //
+		auto result = duration_cast<nanoseconds>(end - start); //
+		std::cout << "Время затраченное на создание массива - " << result.count() << " наносекунд." << std::endl; //
+		std::cout << "Новый массив:" << std::endl;
+		for (int i = 0; i < size; i++) {
+			std::cout << *(arr + i) << " ";
+		}
+		std::cout << std::endl;
+	}
+	if (act == 2) {
+		std::cout << "Вводите элементы массива:" << std::endl;
+		int val;
+		while (std::cin >> val) {
+			size += 1;
+			int* rez = new int[size];
+			for (int i = 0; i < size - 1; i++) {
+				rez[i] = arr[i];
+			}
+			delete[] arr;
+			arr = rez;
+			*(arr + size - 1) = val;
+		}
+		std::cout << "Новый массив:" << std::endl;
+		for (int i = 0; i < size; i++) {
+			std::cout << *(arr + i) << " ";
+		}
+		std::cout << std::endl;
+	}
+	return arr;
+}
